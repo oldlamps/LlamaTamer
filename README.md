@@ -20,9 +20,10 @@ It runs as a simple Node.js server with a clean vanilla JavaScript frontend, mak
 <img width="1222" height="1130" alt="Screenshot_20250916_231957" src="https://github.com/user-attachments/assets/19c3a7d9-3e39-48d4-aeba-3efc38965d23" />
   
   * **🎨 Customizable Experience:**
-      * Dark Mode support.
+      * Themes support.
       * Per-conversation custom system prompts.
       * Dynamic model selection from your available Ollama models.
+      * Override default model paramaters with temperature, Top K, Top P, and seed options
   * **🔧 Centralized Settings:** A simple settings panel to configure your Ollama server URL and required API keys.
   * **✨ Modern UI:**
       * Full Markdown and code syntax highlighting for model responses.
