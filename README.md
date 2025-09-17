@@ -64,7 +64,7 @@ Before you begin, ensure you have the following installed and configured:
     node server.js
     ```
 
-    You will see a confirmation in your terminal that the server is running, and a new icon will appear in your system tray.
+    You will see a confirmation in your terminal that the server is running, and a new icon will appear in your system tray. The Llame Tamer front end can be accessed directy from your browser at http://localhost:3333
 
 2.  **First-Time Configuration:**
 
