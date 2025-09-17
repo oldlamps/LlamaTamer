@@ -1,4 +1,4 @@
-# LlamaTamer 🦙
+# 🦙 Llama Tamer
 
 **A lightweight, personal chat UI for Ollama with live, real-time web search capabilities.**
 
@@ -7,6 +7,7 @@ LlamaTamer is a simple, self-hosted, and intuitive frontend for interacting with
 It runs as a simple Node.js server with a clean vanilla JavaScript frontend, making it fast, portable, and easy to modify.
 
 -----
+<img width="1222" height="1130" alt="Screenshot_20250916_231957" src="https://github.com/user-attachments/assets/19c3a7d9-3e39-48d4-aeba-3efc38965d23" />
 
 ## Features
 
@@ -22,6 +23,8 @@ It runs as a simple Node.js server with a clean vanilla JavaScript frontend, mak
   * **✨ Modern UI:**
       * Full Markdown and code syntax highlighting for model responses.
       * Text-to-speech for listening to replies.
+
+<img width="1217" height="1134" alt="Screenshot_20250916_231848" src="https://github.com/user-attachments/assets/5d031fd6-2435-4c26-863f-5309c0e53f5c" />
 
 -----
 
