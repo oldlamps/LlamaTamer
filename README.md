@@ -16,7 +16,9 @@ It runs as a simple Node.js server with a clean vanilla JavaScript frontend, mak
   * **💾 Persistent Conversations:** All your chats are saved to your browser's local storage.
   * **✏️ Conversation Management:** Easily rename and delete conversations from the sidebar.
   * **⚙️ System Tray Icon:** The server runs in the background with a convenient tray icon to open the UI or exit the application.
+
 <img width="1222" height="1130" alt="Screenshot_20250916_231957" src="https://github.com/user-attachments/assets/19c3a7d9-3e39-48d4-aeba-3efc38965d23" />
+  
   * **🎨 Customizable Experience:**
       * Dark Mode support.
       * Per-conversation custom system prompts.
