@@ -31,7 +31,7 @@ Before you begin, ensure you have the following installed and configured:
 
 1.  **[Ollama](https://ollama.com/):** You must have Ollama installed and running on your system.
 2.  **[Node.js](https://nodejs.org/):** Version 18.x or later is recommended.
-3.  **Brave Search API Key:** The web search feature requires a free API key from Brave. You can get one at [Brave Search API](https://brave.com/search/api/).
+3.  **[Brave Search API Key](https://brave.com/search/api/):** The web search feature requires a free API key from Brave.
 
 -----
 
@@ -68,7 +68,7 @@ Before you begin, ensure you have the following installed and configured:
 
 2.  **First-Time Configuration:**
 
-      * Right-click the system tray icon and select **"Open Synapse"** (or LlamaTamer) to launch the UI in your browser.
+      * Right-click the system tray icon and select **"Open Llamatamer"** to launch the UI in your browser.
       * Click the **"⚙️ Settings"** button in the bottom-left corner.
       * **Ollama Server URL:** Verify this points to where your Ollama instance is running (default is `http://localhost:11434`). Use the "Test" button to confirm it can connect.
       * **Brave Search API Key:** Paste your API key here. **Web search will not work without it.**
