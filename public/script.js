@@ -1,6 +1,6 @@
-
 document.addEventListener('DOMContentLoaded', () => {
 
+    // Main UI elements
     const userInput = document.getElementById('user-input');
     const sendButton = document.getElementById('send-button');
     const messagesContainer = document.getElementById('messages');
@@ -10,17 +10,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const newChatBtn = document.getElementById('new-chat-btn');
     const systemPromptInput = document.getElementById('system-prompt');
     const webSearchCheckbox = document.getElementById('web-search-checkbox');
+
+    // Global Settings Modal elements
     const settingsBtn = document.getElementById('settings-btn');
     const settingsModal = document.getElementById('settings-modal');
-    const closeModalBtn = document.querySelector('.modal-close-btn');
+    const closeModalBtn = document.querySelector('#settings-modal .modal-close-btn');
     const saveSettingsBtn = document.getElementById('save-settings-btn');
     const ollamaUrlInput = document.getElementById('ollama-url');
     const braveApiKeyInput = document.getElementById('brave-api-key');
     const defaultModelSelect = document.getElementById('default-model');
-    const darkModeToggle = document.getElementById('dark-mode-toggle');
+    const themeSelector = document.getElementById('theme-selector');
     const hljsTheme = document.getElementById('hljs-theme');
     const testConnectionBtn = document.getElementById('test-connection-btn');
     const connectionStatus = document.getElementById('connection-status');
+
+    // Conversation Options Modal elements
+    const conversationOptionsBtn = document.getElementById('conversation-options-btn');
+    const conversationOptionsModal = document.getElementById('conversation-options-modal');
+    const closeConvOptionsBtn = document.querySelector('#conversation-options-modal .modal-close-btn');
+    const saveConvOptionsBtn = document.getElementById('save-conversation-options-btn');
+    const overrideDefaultsToggle = document.getElementById('override-defaults-toggle');
+    const optionsGroup = document.querySelector('.options-group');
+    const temperatureInput = document.getElementById('temperature');
+    const temperatureValue = document.getElementById('temperature-value');
+    const topKInput = document.getElementById('top-k');
+    const topKValue = document.getElementById('top-k-value');
+    const topPInput = document.getElementById('top-p');
+    const topPValue = document.getElementById('top-p-value');
+    const seedInput = document.getElementById('seed');
+
 
     // --- State Management ---
     let conversations = {};
@@ -31,8 +49,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const defaultSettings = {
         ollamaUrl: 'http://localhost:11434',
         defaultModel: '',
-            darkMode: false,
-            braveApiKey: '',
+        theme: 'light',
+        braveApiKey: '',
+    };
+
+    const defaultConversationOptions = {
+        override: false,
+        temperature: 0.8,
+        topK: 40,
+        topP: 0.9,
+        seed: null,
     };
 
     // --- Markdown & Highlighter Setup ---
@@ -52,21 +78,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const savedSettings = localStorage.getItem('ollamaChatSettings');
         settings = savedSettings ? JSON.parse(savedSettings) : { ...defaultSettings };
 
-        // Ensure all default keys are present
         for (const key in defaultSettings) {
             if (!(key in settings)) {
                 settings[key] = defaultSettings[key];
             }
         }
-
         ollamaUrlInput.value = settings.ollamaUrl;
         braveApiKeyInput.value = settings.braveApiKey;
-        darkModeToggle.checked = settings.darkMode;
-        applyDarkMode(settings.darkMode);
+        themeSelector.value = settings.theme;
+        applyTheme(settings.theme);
     }
 
-    function applyDarkMode(isDark) {
-        document.body.classList.toggle('dark-mode', isDark);
+    function applyTheme(themeName) {
+        document.body.className = ''; // Clear all existing theme classes
+        document.body.classList.add(themeName);
+
+        const isDark = !['light', 'solarized-light'].includes(themeName);
         const themeUrl = isDark ? document.documentElement.style.getPropertyValue('--hljs-theme-dark') : document.documentElement.style.getPropertyValue('--hljs-theme-light');
         hljsTheme.setAttribute('href', themeUrl);
     }
@@ -89,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- UI & Message Functions ---
     function speakText(text) {
-        window.speechSynthesis.cancel(); // Stop any previous speech
+        window.speechSynthesis.cancel();
         const speech = new SpeechSynthesisUtterance(text);
         window.speechSynthesis.speak(speech);
     }
@@ -118,11 +145,31 @@ document.addEventListener('DOMContentLoaded', () => {
         messageDiv.classList.add('message', 'bot-message');
         const renderedHtml = md.render(content);
         messageDiv.innerHTML = renderedHtml;
+
+        const actionsContainer = document.createElement('div');
+        actionsContainer.classList.add('message-actions');
+        
         const speakIcon = document.createElement('span');
         speakIcon.classList.add('speak-icon');
         speakIcon.innerText = '🔊';
+        speakIcon.title = 'Read text aloud';
         speakIcon.addEventListener('click', () => speakText(content));
-        messageDiv.appendChild(speakIcon);
+        
+        const copyIcon = document.createElement('span');
+        copyIcon.classList.add('copy-icon');
+        copyIcon.innerText = '📋';
+        copyIcon.title = 'Copy to clipboard';
+        copyIcon.addEventListener('click', () => {
+            navigator.clipboard.writeText(content).then(() => {
+                copyIcon.innerText = '✅';
+                setTimeout(() => { copyIcon.innerText = '📋'; }, 2000);
+            });
+        });
+
+        actionsContainer.appendChild(copyIcon);
+        actionsContainer.appendChild(speakIcon);
+        messageDiv.appendChild(actionsContainer);
+
         messageDiv.querySelectorAll('pre code').forEach((block) => {
             hljs.highlightElement(block);
         });
@@ -205,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 conversations[chatId].title = newTitle;
                 saveConversations();
             }
-            renderConversationList(); // Rerender to show the span again
+            renderConversationList();
         };
 
         input.onblur = saveRename;
@@ -248,7 +295,8 @@ document.addEventListener('DOMContentLoaded', () => {
             history: [],
             systemPrompt: '',
             isWebSearchEnabled: false,
-            model: settings.defaultModel
+            model: settings.defaultModel,
+            options: { ...defaultConversationOptions } // Each chat gets its own options
         };
         activeChatId = newChatId;
         saveConversations();
@@ -277,21 +325,18 @@ document.addEventListener('DOMContentLoaded', () => {
             populateSelect(defaultModelSelect);
 
             if (data.models.length > 0) {
-                // Set default model in settings if not already set
-                if (!settings.defaultModel && data.models.length > 0) {
+                if (!settings.defaultModel) {
                     settings.defaultModel = data.models[0].name;
                     saveSettings();
                 }
                 defaultModelSelect.value = settings.defaultModel;
-
-                // Set current model based on active chat or default
                 const chat = conversations[activeChatId];
                 currentModel = chat?.model || settings.defaultModel;
                 modelSelector.value = currentModel;
             }
         } catch (error) {
             console.error('Error fetching models:', error);
-            addMessage(`Error: Could not connect to Ollama at ${settings.ollamaUrl}. Please check the URL in Settings and ensure Ollama is running.`, 'bot');
+            addMessage(`Error: Could not connect to Ollama at ${settings.ollamaUrl}.`, 'bot');
         }
     }
 
@@ -308,7 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let searchDataForSources = null;
 
         if (isWebSearchEnabled) {
-            if (!settings.braveApiKey) {
+             if (!settings.braveApiKey) {
                 addMessage('Error: Brave Search API key is not set. Please add it in Settings.', 'bot');
                 return;
             }
@@ -330,7 +375,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 const searchData = await searchResponse.json();
                 searchDataForSources = searchData;
-
                 let webContext = "--- Web Search Context ---\n\n";
                 if (searchData.scrapedResults?.length > 0) {
                     webContext += "## Full Content from Top Results:\n\n";
@@ -353,9 +397,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 statusMessageDiv.innerText = `❌ Web search failed: ${error.message}. Answering without web context.`;
             }
         }
-
+        
         const activeConv = conversations[activeChatId];
-        activeConv.model = currentModel; // Save the model used for this chat
+        
+        // Construct the options object ONLY if override is enabled for this chat
+        let options = {};
+        const chatOptions = activeConv.options || defaultConversationOptions;
+        if (chatOptions.override) {
+            if (chatOptions.temperature != null) options.temperature = chatOptions.temperature;
+            if (chatOptions.topK != null && chatOptions.topK > 0) options.top_k = chatOptions.topK;
+            if (chatOptions.topP != null) options.top_p = chatOptions.topP;
+            if (chatOptions.seed != null && chatOptions.seed > 0) options.seed = chatOptions.seed;
+        }
+
+        activeConv.model = currentModel;
         const messagePayload = [{ role: 'system', content: activeConv.systemPrompt.trim() }, ...activeConv.history, { role: 'user', content: finalPromptForOllama }];
 
         if (activeConv.title === 'New Chat' && activeConv.history.length === 0) {
@@ -366,7 +421,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({
                         model: currentModel,
                         prompt: `Generate a short, concise title (under 5 words) for this conversation based on the user's first message: "${userMessage}"`,
-                                         stream: false
+                        stream: false,
+                        options: { temperature: 0.2 }
                     })
                 });
                 if (!titleResponse.ok) throw new Error('Title generation failed.');
@@ -389,7 +445,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(`${settings.ollamaUrl}/api/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ model: currentModel, messages: messagePayload, stream: true })
+                body: JSON.stringify({
+                    model: currentModel,
+                    messages: messagePayload,
+                    stream: true,
+                    options: options
+                })
             });
 
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -412,11 +473,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (done) {
                     let finalResponseContent = fullBotResponse;
                     if (searchDataForSources) finalResponseContent += createSourcesHtml(searchDataForSources);
-
                     activeConv.history.push({ role: 'user', content: userMessage });
                     activeConv.history.push({ role: 'assistant', content: finalResponseContent });
                     saveConversations();
-
                     const finalBotMessageDiv = createBotMessage(finalResponseContent);
                     if(botMessageDiv) botMessageDiv.replaceWith(finalBotMessageDiv);
                     scrollAnchor.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -477,16 +536,57 @@ document.addEventListener('DOMContentLoaded', () => {
         const oldUrl = settings.ollamaUrl;
         settings.ollamaUrl = ollamaUrlInput.value.trim() || defaultSettings.ollamaUrl;
         settings.defaultModel = defaultModelSelect.value;
-        settings.darkMode = darkModeToggle.checked;
+        settings.theme = themeSelector.value;
         settings.braveApiKey = braveApiKeyInput.value.trim();
         saveSettings();
+        applyTheme(settings.theme);
         settingsModal.style.display = 'none';
-
-        if (oldUrl !== settings.ollamaUrl) {
-            window.location.reload();
-        }
+        if (oldUrl !== settings.ollamaUrl) window.location.reload();
     });
-    darkModeToggle.addEventListener('change', () => applyDarkMode(darkModeToggle.checked));
+    themeSelector.addEventListener('change', () => applyTheme(themeSelector.value));
+    
+    // --- Conversation Options Modal Listeners ---
+    conversationOptionsBtn.addEventListener('click', () => {
+        const chatOptions = conversations[activeChatId].options || defaultConversationOptions;
+        
+        // Populate modal with current chat's settings
+        overrideDefaultsToggle.checked = chatOptions.override;
+        temperatureInput.value = chatOptions.temperature;
+        temperatureValue.textContent = chatOptions.temperature.toFixed(1);
+        topKInput.value = chatOptions.topK;
+        topKValue.textContent = chatOptions.topK;
+        topPInput.value = chatOptions.topP;
+        topPValue.textContent = chatOptions.topP.toFixed(2);
+        seedInput.value = chatOptions.seed || '';
+        
+        optionsGroup.classList.toggle('disabled', !chatOptions.override);
+        conversationOptionsModal.style.display = 'flex';
+    });
+    
+    closeConvOptionsBtn.addEventListener('click', () => { conversationOptionsModal.style.display = 'none'; });
+    
+    saveConvOptionsBtn.addEventListener('click', () => {
+        const chatOptions = conversations[activeChatId].options;
+        chatOptions.override = overrideDefaultsToggle.checked;
+        chatOptions.temperature = parseFloat(temperatureInput.value);
+        chatOptions.topK = parseInt(topKInput.value, 10);
+        chatOptions.topP = parseFloat(topPInput.value);
+        const seedValue = parseInt(seedInput.value, 10);
+        chatOptions.seed = isNaN(seedValue) ? null : seedValue;
+        
+        saveConversations();
+        conversationOptionsModal.style.display = 'none';
+    });
+
+    // Listeners for sliders to update their value displays
+    temperatureInput.addEventListener('input', (e) => { temperatureValue.textContent = parseFloat(e.target.value).toFixed(1); });
+    topKInput.addEventListener('input', (e) => { topKValue.textContent = e.target.value; });
+    topPInput.addEventListener('input', (e) => { topPValue.textContent = parseFloat(e.target.value).toFixed(2); });
+    overrideDefaultsToggle.addEventListener('change', (e) => {
+        optionsGroup.classList.toggle('disabled', !e.target.checked);
+    });
+
+    // --- Test Connection Button ---
     testConnectionBtn.addEventListener('click', async () => {
         const url = ollamaUrlInput.value.trim();
         if (!url) {

@@ -15,7 +15,8 @@
     --hljs-theme-dark: 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css';
 }
 
-body.dark-mode {
+/* --- Theme Definitions --- */
+body.dark {
     --border-color: #373a3c;
     --background-light: #1c1c1c;
     --background-white: #252526;
@@ -28,6 +29,49 @@ body.dark-mode {
     --code-bg: #1e1e1e;
     --code-color: #d4d4d4;
 }
+
+body.solarized-light {
+    --border-color: #eee8d5;
+    --background-light: #fdf6e3;
+    --background-white: #eee8d5;
+    --text-dark: #657b83;
+    --text-light: #93a1a1;
+    --primary-blue: #268bd2;
+    --primary-blue-hover: #1e6a9e;
+    --user-message-bg: #268bd2;
+    --bot-message-bg: #fdf6e3;
+    --code-bg: #002b36;
+    --code-color: #839496;
+}
+
+body.solarized-dark {
+    --border-color: #073642;
+    --background-light: #002b36;
+    --background-white: #073642;
+    --text-dark: #839496;
+    --text-light: #586e75;
+    --primary-blue: #268bd2;
+    --primary-blue-hover: #50a2d5;
+    --user-message-bg: #268bd2;
+    --bot-message-bg: #002b36;
+    --code-bg: #001f27;
+    --code-color: #93a1a1;
+}
+
+body.nord {
+    --border-color: #3b4252;
+    --background-light: #2e3440;
+    --background-white: #3b4252;
+    --text-dark: #d8dee9;
+    --text-light: #a0a8b7;
+    --primary-blue: #81a1c1;
+    --primary-blue-hover: #8fbcbb;
+    --user-message-bg: #5e81ac;
+    --bot-message-bg: #434c5e;
+    --code-bg: #2e3440;
+    --code-color: #d8dee9;
+}
+
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -166,7 +210,6 @@ flex-grow: 1;
 display: flex;
 flex-direction: column;
 height: 100%;
-/* Add this single line 👇 */
 min-width: 0;
 }
 
@@ -178,17 +221,56 @@ overflow: hidden;
 padding: 0 20px;
 }
 
-#system-prompt {
-width: calc(100% - 20px);
-padding: 10px;
-margin: 10px 0;
-border: 1px solid var(--border-color);
-border-radius: 6px;
-font-family: inherit;
-resize: none;
-background-color: var(--background-white);
-color: var(--text-dark);
+#chat-header {
+    display: flex;
+    gap: 10px;
+    align-items: center; 
+    padding: 10px 0;
+    border: 1px solid var(--border-color); 
+    border-radius: 6px; 
+    background-color: var(--background-white); 
+    padding: 5px 10px; 
+    margin: 10px 0;
 }
+
+#system-prompt {
+    flex-grow: 1; 
+    border: none; 
+    padding: 5px;
+    background-color: transparent; 
+    resize: none;
+    height: 28px; 
+    outline: none; 
+    color: var(--text-dark);
+}
+
+body.dark #system-prompt {
+    color: #ffffff;
+}
+body.nord #system-prompt {
+    color: #ffffff;
+}
+body.solarized-dark #system-prompt {
+    color: #eee8d5;
+}
+
+
+#conversation-options-btn {
+    flex-shrink: 0; 
+    padding: 6px 12px;
+    border: 1px solid var(--border-color);
+    background-color: var(--background-light); 
+    color: var(--text-dark);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    height: auto; 
+}
+#conversation-options-btn:hover {
+    background-color: var(--border-color);
+}
+
 
 #messages {
 flex-grow: 1;
@@ -227,10 +309,10 @@ padding: 10px 0;
     color: var(--code-color);
     padding: 15px;
     border-radius: 8px;
-    overflow-x: auto;   /* This will now work correctly */
+    overflow-x: auto;
     max-width: 100%;
-    box-sizing: border-box; /* This is the key fix */
-    white-space: pre;     /* Ensures code doesn't wrap unexpectedly */
+    box-sizing: border-box;
+    white-space: pre;
 }
 
 .bot-message code {
@@ -269,7 +351,7 @@ background-color: var(--background-white);
 transition: background-color 0.3s, border-color 0.3s;
 }
 
-#model-selector, #default-model {
+#model-selector, #default-model, #theme-selector {
 padding: 10px;
 border-radius: 6px;
 border: 1px solid var(--border-color);
@@ -411,12 +493,20 @@ background-color: var(--primary-blue-hover);
     align-items: center;
     margin-bottom: 15px;
 }
+.setting-item:last-child {
+    margin-bottom: 0;
+}
+
 
 .setting-item label {
     font-weight: 500;
+    margin-right: 15px;
 }
 
-.setting-item input[type="text"], .setting-item select {
+.setting-item input[type="text"],
+.setting-item input[type="number"],
+.setting-item input[type="password"]
+ {
     width: 250px;
     padding: 8px;
     border-radius: 6px;
@@ -434,12 +524,39 @@ background-color: var(--primary-blue-hover);
     border-radius: 6px;
     cursor: pointer;
     font-size: 1rem;
-    margin-top: 10px;
+    margin-top: 20px;
     transition: background-color 0.2s;
 }
 .modal-save-btn:hover {
     background-color: var(--primary-blue-hover);
 }
+
+.slider-container {
+    display: flex;
+    align-items: center;
+    width: 250px;
+}
+.slider-container input[type="range"] {
+    flex-grow: 1;
+}
+.slider-value {
+    min-width: 35px;
+    text-align: right;
+    margin-left: 10px;
+    font-family: monospace;
+    font-size: 0.9em;
+}
+
+.options-group {
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.options-group.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    transform: scale(0.98);
+}
+
 
 /* Dark Mode Toggle Switch */
 .switch {
@@ -502,7 +619,7 @@ input:checked + .slider:before {
     gap: 8px;
 }
 .input-with-button input {
-    width: 200px; /* Adjust as needed */
+    flex-grow: 1;
 }
 #test-connection-btn {
 padding: 8px 12px;
@@ -564,4 +681,15 @@ color: #dc3545;
     0% { opacity: 0.2; }
     20% { opacity: 1; }
     100% { opacity: 0.2; }
+}
+.copy-icon {
+    cursor: pointer;
+    margin-left: 8px; /* Spacing between icons */
+    font-size: 0.9em;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+.bot-message:hover .copy-icon {
+    opacity: 1;
 }
