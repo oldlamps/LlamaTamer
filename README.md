@@ -28,7 +28,7 @@ It runs as a simple Node.js server with a clean vanilla JavaScript frontend, mak
       * Full Markdown and code syntax highlighting for model responses.
       * Text-to-speech for listening to replies.
 
-<img width="1217" height="1134" alt="Screenshot_20250916_231848" src="https://github.com/user-attachments/assets/5d031fd6-2435-4c26-863f-5309c0e53f5c" />
+<img width="1339" height="1182" alt="Screenshot_20250917_031855" src="https://github.com/user-attachments/assets/5d6895bd-907d-460a-84e0-d64ba4de5145" />
 
 -----
 
