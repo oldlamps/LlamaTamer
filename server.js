@@ -5,8 +5,7 @@ const cheerio = require('cheerio');
 const path = require('path');
 const fs = require('fs');
 const Systray = require('systray').default;
-const { exec } = require('child_process'); // Use the built-in module, NOT 'open'
-
+const { exec } = require('child_process'); 
 const app = express();
 const port = 3333;
 const serverUrl = `http://localhost:${port}`;
